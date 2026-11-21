@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block body %}
+<main class="content centered">
+  <div class="stack">
+
+    <div class="card">
+      <div class="person">
+        <span class="avatar avatar-big" style="background: {{ item.tenant_name | avatar_color }}">{{ item.tenant_name | initial }}</span>
+        <div>
+          <h2 class="person-name">{{ item.tenant_name }}</h2>
+          <div class="home-line no-margin">Wants: {{ item.property_title }} · ID: {{ item.property_id }}</div>
+        </div>
+      </div>
+
+      <div class="row"><span>NID provided</span><span class="pill {{ item.nid_provided | pill }}">{{ item.nid_provided }}</span></div>
+      <div class="row"><span>Phone provided</span><span class="pill {{ item.phone_provided | pill }}">{{ item.phone_provided }}</span></div>
+      <div class="row"><span>Identity check</span><span class="pill {{ item.identity_status | pill }}">{{ item.identity_status }}</span></div>
+    </div>
+
+    <a class="btn btn-light btn-wide" href="{{ url_for('tenant_requests') }}">Back</a>
+  </div>
+</main>
+{% endblock %}

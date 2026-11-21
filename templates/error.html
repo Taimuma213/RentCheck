@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block body %}
+<main class="content centered">
+  <div class="card">
+    <h2>Oops</h2>
+    <p>{{ message }}</p>
+    <div class="actions"><a class="btn btn-light" href="{{ url_for('index') }}">Go to home</a></div>
+  </div>
+</main>
+{% endblock %}
