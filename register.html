@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block nav %}{% endblock %}
+{% block body %}
+<div class="auth">
+  <div class="auth-left"><h1>RentCheck</h1><p>Check before you rent</p></div>
+  <div class="auth-right">
+    <div class="auth-card">
+      <div class="tabs">
+        <a class="tab" href="{{ url_for('login') }}">Login</a>
+        <a class="tab active" href="{{ url_for('register') }}">Register</a>
+      </div>
+      <h3>Create account</h3>
+      <form method="post">
+        <input class="field" name="name" placeholder="Full name" value="{{ request.form.get('name', '') }}" required>
+        <input class="field" type="email" name="email" placeholder="Email" value="{{ request.form.get('email', '') }}" required>
+        <input class="field" type="password" name="password" placeholder="Password (at least 6 characters)" required>
+        <div class="role-label">I am a:</div>
+        <div class="roles">
+          <label><input type="radio" name="role" value="Rentee" {{ 'checked' if role == 'Rentee' }}><span>Rentee</span></label>
+          <label><input type="radio" name="role" value="Rentor" {{ 'checked' if role == 'Rentor' }}><span>Rentor</span></label>
+        </div>
+        <button class="btn btn-wide">Create account</button>
+      </form>
+      <p class="auth-link">Already have an account? <a href="{{ url_for('login') }}">Login</a></p>
+    </div>
+  </div>
+</div>
+{% endblock %}

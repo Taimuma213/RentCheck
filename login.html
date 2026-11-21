@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block nav %}{% endblock %}
+{% block body %}
+<div class="auth">
+  <div class="auth-left"><h1>RentCheck</h1><p>Check before you rent</p></div>
+  <div class="auth-right">
+    <div class="auth-card">
+      <div class="tabs">
+        <a class="tab active" href="{{ url_for('login') }}">Login</a>
+        <a class="tab" href="{{ url_for('register') }}">Register</a>
+      </div>
+      <h3>Welcome back</h3>
+      <form method="post">
+        <input class="field" type="email" name="email" placeholder="Email" value="{{ request.form.get('email', '') }}" required>
+        <input class="field" type="password" name="password" placeholder="Password" required>
+        <div class="role-label">I am a:</div>
+        <div class="roles">
+          <label><input type="radio" name="role" value="Rentee" {{ 'checked' if role == 'Rentee' }}><span>Rentee</span></label>
+          <label><input type="radio" name="role" value="Rentor" {{ 'checked' if role == 'Rentor' }}><span>Rentor</span></label>
+        </div>
+        <button class="btn btn-wide">Continue</button>
+      </form>
+      <p class="auth-link">Don't have an account? <a href="{{ url_for('register') }}">Register</a></p>
+      <p class="hint">Demo: rentor@demo.com or rentee@demo.com, password demo123</p>
+    </div>
+  </div>
+</div>
+{% endblock %}
