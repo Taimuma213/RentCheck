@@ -1,0 +1,20 @@
+[
+  {
+    "name": "Demo Rentor",
+    "email": "rentor@demo.com",
+    "role": "Rentor",
+    "password": "scrypt:32768:8:1$7zdVm5l22lkjkM3J$bde8c03e540587b6307e40e47c0cb59a0f5b8fbc901cf30f337cf65c6908360d246b6a79402c445073c4ab46b241eb2af77efa625e284ead1a19e6e46a8ce1e7"
+  },
+  {
+    "name": "Demo Rentee",
+    "email": "rentee@demo.com",
+    "role": "Rentee",
+    "password": "scrypt:32768:8:1$aHddKVmXsY753BHd$4862b25c96e3203608f3ca920f984382bede83ad4b6d3254c728d832df7317b4ad2fab6a8d0ffbcb4b792ea98a429a383fc3229cf009c84268682ffdc6f864ef"
+  },
+  {
+    "name": "Tanusree Dash",
+    "email": "tanusreedash00@gmail.com",
+    "role": "Rentee",
+    "password": "scrypt:32768:8:1$RpJNIJMYlO5VzI6h$df0ac2801605187396fd76413267d4d668e6e613043e652986d9c9e245fa9ae5abf06fb47d112ffa13ee392c8db2136d3dcc1331eb0ae2bf423a39ad79da5d07"
+  }
+]

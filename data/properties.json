@@ -1,0 +1,163 @@
+[
+  {
+    "id": 11575,
+    "owner": "rentor@demo.com",
+    "owner_name": "Demo Rentor",
+    "status": "published",
+    "photos": [
+      "uploads/flats/flat11575_1f831130ba_pexels-artbovich-7031621.jpg"
+    ],
+    "documents": {
+      "rental_agreement": null,
+      "utility_bill": null,
+      "ownership_paper": null,
+      "landlord_id_copy": null
+    },
+    "ownership": {
+      "format": null,
+      "name": "",
+      "address": ""
+    },
+    "agreement": {
+      "name": "",
+      "address": "",
+      "conditions": {
+        "Deposit refund": "Missing",
+        "Notice period": "Missing",
+        "Maintenance duty": "Missing"
+      }
+    },
+    "address": "House 12, Road 5, Mirpur 10, Dhaka",
+    "landlord_name": "Rahim Ahmed",
+    "landlord_phone": "01711000001",
+    "property_type": "Apartment",
+    "other_charge_description": "moyla bill",
+    "bedrooms": 2,
+    "washrooms": 2,
+    "balconies": 1,
+    "flat_size": 1100.0,
+    "rent": 25000.0,
+    "deposit": 50000.0,
+    "service_charge": 2000.0,
+    "utility": 3000.0,
+    "other_charges": 1000.0,
+    "identity": {
+      "full_name": "Rahim Ahmed",
+      "status": "Matched"
+    },
+    "crosscheck": {
+      "has_mismatch": false,
+      "problems": []
+    },
+    "identity_status": "Matched",
+    "risk": {
+      "level": "High",
+      "score": 70
+    },
+    "summary": [
+      [
+        "Identity",
+        "Matched"
+      ],
+      [
+        "Property info",
+        "Needs Review"
+      ],
+      [
+        "Cross-check",
+        "Clear"
+      ],
+      [
+        "Documents",
+        "Missing"
+      ]
+    ],
+    "recommendations": [
+      "Missing documents: Rental agreement, Utility bill, Ownership paper, Landlord ID copy",
+      "Unclear/missing terms: Deposit refund, Notice period, Maintenance duty"
+    ],
+    "published_at": "2026-11-20 20:45"
+  },
+  {
+    "id": 11576,
+    "owner": "rentor@demo.com",
+    "owner_name": "Demo Rentor",
+    "status": "published",
+    "photos": [
+      "uploads/flats/flat11576_1e3bd4b5f7_pexels-artbovich-7031621.jpg"
+    ],
+    "documents": {
+      "rental_agreement": {
+        "file": "uploads/documents/doc11576_rental_agreement_d4f50fd3e1_RentCheck_Assessment_Report_11575.pdf",
+        "original": "RentCheck_Assessment_Report_11575.pdf"
+      },
+      "utility_bill": null,
+      "ownership_paper": null,
+      "landlord_id_copy": null
+    },
+    "ownership": {
+      "format": null,
+      "name": "",
+      "address": ""
+    },
+    "agreement": {
+      "name": "Rahim Ahmed",
+      "address": "",
+      "conditions": {
+        "Deposit refund": "Unclear",
+        "Notice period": "Unclear",
+        "Maintenance duty": "Unclear"
+      }
+    },
+    "address": "House 12, Road 5, Mirpur 10, Dhaka",
+    "landlord_name": "Rahim Ahmed",
+    "landlord_phone": "01711000001",
+    "property_type": "Apartment",
+    "other_charge_description": "moyla bill",
+    "bedrooms": 2,
+    "washrooms": 2,
+    "balconies": 1,
+    "flat_size": 1100.0,
+    "rent": 20000.0,
+    "deposit": 20000.0,
+    "service_charge": 1000.0,
+    "utility": 2000.0,
+    "other_charges": 100.0,
+    "identity": {
+      "full_name": "Rahim Ahmed",
+      "status": "Matched"
+    },
+    "crosscheck": {
+      "has_mismatch": false,
+      "problems": []
+    },
+    "identity_status": "Matched",
+    "risk": {
+      "level": "High",
+      "score": 60
+    },
+    "summary": [
+      [
+        "Identity",
+        "Matched"
+      ],
+      [
+        "Property info",
+        "Needs Review"
+      ],
+      [
+        "Cross-check",
+        "Clear"
+      ],
+      [
+        "Documents",
+        "Missing"
+      ]
+    ],
+    "recommendations": [
+      "Missing documents: Utility bill, Ownership paper, Landlord ID copy",
+      "Unclear/missing terms: Deposit refund, Notice period, Maintenance duty"
+    ],
+    "published_at": "2026-11-20 22:04"
+  }
+]
