@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{# Page with the left step list. Child pages set `title` and fill block `card`. #}
+{% block body %}
+<div class="shell">
+  <aside class="sidebar">
+    {% for name in steps %}
+    <div class="step {{ 'done' if loop.index < step else 'active' if loop.index == step else '' }}">
+      <span class="dot">{{ '✓' if loop.index < step else loop.index }}</span>
+      <span class="label">{{ name }}</span>
+    </div>
+    {% endfor %}
+  </aside>
+  <main class="content">
+    <div class="card">
+      <div class="subtitle">Step {{ step }} of {{ steps|length }}</div>
+      <h2>{{ title }}</h2>
+      {% block card %}{% endblock %}
+    </div>
+  </main>
+</div>
+{% endblock %}

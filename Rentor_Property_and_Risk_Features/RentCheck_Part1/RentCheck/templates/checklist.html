@@ -1,0 +1,33 @@
+{% extends "flow.html" %}
+{% set title = "Documents and agreement" %}
+{% block card %}
+<div class="section-title">Document checklist</div>
+{% for r in rows %}
+<form class="doc-form" method="post" action="{{ url_for('upload_document', doc_key=r.key) }}" enctype="multipart/form-data">
+  <label class="row doc-row">
+    <span class="doc-name">{{ r.label }}{% if r.have %}<small>{{ r.original }}</small>{% endif %}</span>
+    <span class="doc-side">
+      {% if r.have %}<a class="link-small" href="{{ url_for('static', filename=r.file) }}" target="_blank">View</a>{% endif %}
+      <span class="pill {{ 'pill-green' if r.have else 'pill-red' }}">{{ 'Have' if r.have else 'Missing' }}</span>
+    </span>
+    <input type="file" name="file" accept=".pdf,.jpg,.jpeg,.png" onchange="this.form.submit()">
+  </label>
+</form>
+{% endfor %}
+<p class="small">Click a row to choose a file (PDF, JPG or PNG). Please use dummy files only, never real identity documents.</p>
+
+<div class="section-title">Agreement details</div>
+<input class="field" readonly placeholder="Landlord name in agreement" value="{{ agreement.name }}">
+{% for label, value in agreement.conditions.items() %}
+<div class="row">
+  <span>{{ label }}</span>
+  <span class="pill {{ 'pill-green' if value == 'Have' else 'pill-yellow' if value == 'Unclear' else 'pill-red' }}">{{ value }}</span>
+</div>
+{% endfor %}
+<p class="small">These details are filled in automatically when you upload a text-based rental agreement PDF.</p>
+
+<div class="actions">
+  <a class="btn btn-light" href="{{ url_for('rentor_property') }}">Back</a>
+  <a class="btn" href="{{ url_for('rentor_crosscheck') }}">Next</a>
+</div>
+{% endblock %}

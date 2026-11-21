@@ -1,0 +1,43 @@
+{% extends "flow.html" %}
+{% set title = "Property information" %}
+{% block card %}
+<form method="post" enctype="multipart/form-data">
+  <input class="field" name="address" placeholder="Property address" value="{{ v.get('address', '') }}">
+  <div class="two">
+    <input class="field" name="landlord_name" placeholder="Landlord name" value="{{ v.get('landlord_name', '') }}">
+    <input class="field" name="landlord_phone" placeholder="Landlord phone" value="{{ v.get('landlord_phone', '') }}">
+  </div>
+  <select class="field" name="property_type">
+    <option value="">Property type</option>
+    {% for t in types %}<option value="{{ t }}" {{ 'selected' if v.get('property_type') == t }}>{{ t }}</option>{% endfor %}
+  </select>
+  <div class="two">
+    <input class="field" type="number" min="0" step="1" name="bedrooms" placeholder="Bedrooms" value="{{ v.get('bedrooms', '') | num }}">
+    <input class="field" type="number" min="0" step="1" name="washrooms" placeholder="Washrooms" value="{{ v.get('washrooms', '') | num }}">
+    <input class="field" type="number" min="0" step="1" name="balconies" placeholder="Balconies" value="{{ v.get('balconies', '') | num }}">
+    <input class="field" type="number" min="0" step="any" name="flat_size" placeholder="Flat size (sq ft)" value="{{ v.get('flat_size', '') | num }}">
+  </div>
+
+  <span class="field-label">Flat pictures (JPG, PNG or WEBP, you can choose several)</span>
+  <input class="field" type="file" name="photos" accept=".jpg,.jpeg,.png,.webp" multiple>
+  {% if photos %}
+  <div class="thumbs">{% for p in photos %}<img src="{{ url_for('static', filename=p) }}" alt="Flat picture">{% endfor %}</div>
+  <p class="small">{{ photos|length }} picture(s) saved. Choosing more pictures adds them.</p>
+  {% endif %}
+
+  <div class="two">
+    <input class="field" type="number" min="0" step="any" name="rent" placeholder="Rent (Tk)" value="{{ v.get('rent', '') | num }}">
+    <input class="field" type="number" min="0" step="any" name="deposit" placeholder="Deposit (Tk)" value="{{ v.get('deposit', '') | num }}">
+    <input class="field" type="number" min="0" step="any" name="service_charge" placeholder="Service charge (Tk)" value="{{ v.get('service_charge', '') | num }}">
+    <input class="field" type="number" min="0" step="any" name="utility" placeholder="Utility (Tk)" value="{{ v.get('utility', '') | num }}">
+  </div>
+  <input class="field" type="number" min="0" step="any" name="other_charges" placeholder="Other charges (Tk)" value="{{ v.get('other_charges', '') | num }}">
+  <input class="field" name="other_charge_description" placeholder="What are the other charges for? (for example: Moyla bill)" value="{{ v.get('other_charge_description', '') }}">
+
+  <div class="actions">
+    <a class="btn btn-light" href="{{ url_for('identity') }}">Back</a>
+    <button class="btn">Next</button>
+  </div>
+  <p class="small"><a href="{{ url_for('rentor_property_new') }}">Start a new property</a> (the current one stays saved)</p>
+</form>
+{% endblock %}

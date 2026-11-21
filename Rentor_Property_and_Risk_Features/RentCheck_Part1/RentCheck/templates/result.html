@@ -1,0 +1,37 @@
+{% extends "flow.html" %}
+{% set title = "Assessment report" %}
+{% block card %}
+<div class="two-cards">
+
+  <div class="white-card">
+    <div class="card-title">Summary</div>
+    {% for label, value in summary %}
+    <div class="summary-row">
+      <span>{{ label }}</span>
+      <span class="pill {{ value | pill }}">{{ value }}</span>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="white-card">
+    <div class="card-title">Overall result</div>
+    <div class="overall-row">
+      <span>Overall risk</span>
+      <b class="risk-{{ risk.level | lower }}">{{ risk.score }} points, {{ risk.level }}</b>
+    </div>
+    <hr class="divider">
+    <div class="card-title">Recommendations</div>
+    <ul class="rec-list">
+      {% for text in recommendations %}<li>{{ text }}</li>{% endfor %}
+    </ul>
+  </div>
+
+</div>
+
+<p class="note">Saved as property ID {{ prop.id }}. Rentees can now find it in Homes.</p>
+
+<div class="actions">
+  <a class="btn btn-light" href="{{ url_for('rentor_risk') }}">Back</a>
+  <a class="btn" href="{{ url_for('rentor_report_pdf') }}">Download PDF</a>
+</div>
+{% endblock %}
