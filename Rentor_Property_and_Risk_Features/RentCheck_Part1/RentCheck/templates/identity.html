@@ -1,0 +1,19 @@
+{% extends "flow.html" %}
+{% set title = "Profile and identity check" %}
+{% block card %}
+<form method="post">
+  <input class="field" name="full_name" placeholder="Full name" value="{{ values.full_name }}">
+  <input class="field" name="nid" placeholder="NID number" value="{{ values.nid }}">
+  <input class="field" type="date" name="dob" title="Date of birth" value="{{ values.dob }}">
+  <input class="field" name="phone" placeholder="Phone" value="{{ values.phone }}">
+  <button class="btn btn-wide" name="action" value="check">Check Identity</button>
+  <div class="actions">
+    <div>
+      {% if status == 'Matched' %}<span class="pill pill-green">Matched</span>
+      {% elif status == 'Needs Review' %}<span class="pill pill-yellow">Needs Review</span>{% endif %}
+    </div>
+    <button class="btn" name="action" value="next">Next</button>
+  </div>
+  <p class="note">Sample check against dummy records. It does not prove real identity.</p>
+</form>
+{% endblock %}

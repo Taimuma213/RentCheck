@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block body %}
+<main class="content centered">
+  <div class="card">
+    <h2>Profile</h2>
+    <div class="row"><span>Name</span><b>{{ current_user.name }}</b></div>
+    <div class="row"><span>Email</span><b>{{ current_user.id }}</b></div>
+    <div class="row"><span>Role</span><b>{{ current_user.role }}</b></div>
+    <div class="row"><span>Identity check</span>
+      {% if identity and identity.status == 'Matched' %}<span class="pill pill-green">Matched</span>
+      {% elif identity and identity.status == 'Needs Review' %}<span class="pill pill-yellow">Needs Review</span>
+      {% else %}<span class="small">Not checked yet</span>{% endif %}
+    </div>
+    <div class="actions"><a class="btn btn-light" href="{{ url_for('identity') }}">Back</a></div>
+  </div>
+</main>
+{% endblock %}

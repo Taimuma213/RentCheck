@@ -1,0 +1,26 @@
+{% extends "flow.html" %}
+{% set title = "Cross-check" %}
+{% block card %}
+<table class="crosstable">
+  <tr><th>Field</th><th>Landlord</th><th>Property</th><th>Agreement</th></tr>
+  {% for row in rows %}
+  <tr>
+    <th>{{ row.field }}</th>
+    {% for cell in row.cells %}<td class="{{ 'bad' if cell.bad }}">{{ cell.text }}</td>{% endfor %}
+  </tr>
+  {% endfor %}
+</table>
+{% if problems %}
+<div class="warnbox">
+  <div class="warn-title">Inconsistency found</div>
+  <ul>{% for p in problems %}<li>{{ p }}</li>{% endfor %}</ul>
+  Clarify before signing.
+</div>
+{% endif %}
+<p class="small">Landlord = what you typed. Property = from the ownership paper. Agreement = from the rental agreement.
+A “—” means that information is not available.</p>
+<div class="actions">
+  <a class="btn btn-light" href="{{ url_for('rentor_documents') }}">Back</a>
+  <a class="btn" href="{{ url_for('rentor_risk') }}">Next</a>
+</div>
+{% endblock %}

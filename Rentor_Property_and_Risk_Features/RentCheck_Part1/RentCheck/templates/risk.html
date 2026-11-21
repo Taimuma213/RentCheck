@@ -1,0 +1,44 @@
+{% extends "flow.html" %}
+{% set title = "Risk and recommendation" %}
+{% block card %}
+<div class="two-cards">
+
+  <div class="white-card">
+    <div class="card-title">Risk score</div>
+    <div class="gauge-box">
+      <svg viewBox="0 0 200 120" class="gauge" role="img" aria-label="Risk gauge: {{ risk.level }}">
+        <path d="M 20 100 A 80 80 0 0 1 60 30.7" stroke="#28A745" stroke-width="22" fill="none"/>
+        <path d="M 60 30.7 A 80 80 0 0 1 140 30.7" stroke="#F0A500" stroke-width="22" fill="none"/>
+        <path d="M 140 30.7 A 80 80 0 0 1 180 100" stroke="#DC3545" stroke-width="22" fill="none"/>
+        <line x1="100" y1="100" x2="100" y2="36" stroke="#222" stroke-width="5" stroke-linecap="round"
+              transform="rotate({{ needle }} 100 100)"/>
+        <circle cx="100" cy="100" r="7" fill="#222"/>
+      </svg>
+    </div>
+    <div class="gauge-label">
+      <span class="pill {{ risk.level | pill }}">{{ risk.level }}</span>
+      <span class="score-text">({{ risk.score }} pts)</span>
+    </div>
+  </div>
+
+  <div class="white-card">
+    <div class="card-title">Issues and what to clarify</div>
+    {% for issue in risk.issues %}
+    <div class="issue">
+      <div class="issue-top"><span>{{ issue.title }}</span><b>+{{ issue.points }}</b></div>
+      <div class="issue-advice">{{ issue.advice }}</div>
+    </div>
+    {% else %}
+    <div class="good-box">No risk issues were found.</div>
+    {% endfor %}
+  </div>
+
+</div>
+
+<p class="note">Note: These are provisional prototype rules for guidance and not a scientifically validated fraud score.</p>
+
+<div class="actions">
+  <a class="btn btn-light" href="{{ url_for('rentor_crosscheck') }}">Back</a>
+  <a class="btn" href="{{ url_for('rentor_report') }}">View report</a>
+</div>
+{% endblock %}
