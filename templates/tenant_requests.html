@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block body %}
+<main class="content centered">
+  <div class="stack">
+
+    <div class="card">
+      <h2>Tenant requests</h2>
+
+      {% for group in groups %}
+      <div class="home-line">Home: {{ group.property_title }} · ID: {{ group.property_id }}</div>
+
+      {% for item in group['items'] %}
+      <div class="request-card">
+        <span class="avatar" style="background: {{ item.tenant_name | avatar_color }}">{{ item.tenant_name | initial }}</span>
+        <div class="request-info">
+          <b>{{ item.tenant_name }}</b>
+          <div class="request-sub">Identity check
+            <span class="pill {{ item.identity_status | pill }}">{{ item.identity_status }}</span>
+          </div>
+        </div>
+        <a class="btn btn-light btn-small" href="{{ url_for('tenant_report', request_id=item.request_id) }}">View details</a>
+      </div>
+      {% endfor %}
+      {% else %}
+      <div class="empty-box">No tenant has asked for an appointment yet. When a Rentee clicks
+        “Ask for an appointment” on your property, the request appears here.</div>
+      {% endfor %}
+    </div>
+
+    <a class="btn btn-light btn-wide" href="{{ url_for('identity') }}">Back</a>
+  </div>
+</main>
+{% endblock %}
