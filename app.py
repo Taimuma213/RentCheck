@@ -1,4 +1,4 @@
-"""RentCheck - Parts 1 to 3: login, Identity, Property, Documents, Cross-check, Risk, Report, Tenant requests."""
+"""RentCheck - Parts 1 to 4: Rentor flow (Identity to Report, Tenant requests) and Rentee flow (Identity to Rent report)."""
 
 import json
 import os
@@ -46,6 +46,14 @@ IMAGE_EXT = {"jpg", "jpeg", "png", "webp"}
 DOC_EXT = {"pdf", "jpg", "jpeg", "png"}
 MAX_PHOTOS = 8
 LEVEL_ANGLE = {"Low": -60, "Medium": 0, "High": 60}  # where the gauge needle points
+AREAS = [
+    "Dhanmondi", "Uttara", "Mirpur", "Gulshan", "Banani", "Mohammadpur",
+    "Bashundhara", "Badda", "Rampura", "Khilgaon", "Motijheel", "Tejgaon"
+]
+TYPE_WORD = {"Apartment": "flat", "House": "house", "Shared apartment": "shared apartment"}
+BEDROOM_OPTIONS = ["Any", "1", "2", "3", "4+"]
+BATHROOM_OPTIONS = ["Any", "1", "2", "3", "4+"]
+HOMES_PER_PAGE = 6
 
 
 # ============================ JSON FILE HELPERS ============================
@@ -167,13 +175,23 @@ def show_number(value):
 def pill_class(value):
     """Colour of a status badge: green, yellow or red."""
 
-    if value in ("Matched", "Clear", "Yes", "Low", "Have"):
+    if value in ("Matched", "Clear", "Yes", "Low", "Have", "Verified"):
         return "pill-green"
 
     if value in ("Issue", "Missing", "No", "High"):
         return "pill-red"
 
     return "pill-yellow"
+
+
+@app.template_filter("tk")
+def money(value):
+    """Show 25000 as Tk 25,000."""
+
+    try:
+        return "Tk {:,.0f}".format(float(value))
+    except (TypeError, ValueError):
+        return "Tk 0"
 
 
 @app.template_filter("initial")
@@ -1545,16 +1563,473 @@ def tenant_report(request_id):
     abort(404)
 
 
-# ============================ FUTURE PAGES ============================
+# ============================ RENTEE HELPERS ============================
 
-@app.route("/preferences")
+def published_property(pid):
+    """A property whose Rentor has finished the report. Only these are shown to Rentees."""
+
+    prop = get_property(pid)
+
+    if prop and prop.get("status") == "published":
+        return prop
+
+    return None
+
+
+def property_area(prop):
+    """The area name of a property, taken from its address."""
+
+    address = prop["address"].lower()
+
+    for area in AREAS:
+
+        if area.lower() in address:
+            return area
+
+    return prop["address"].split(",")[0].strip()[:30]
+
+
+def short_title(prop, dash=False):
+    """For example "Mirpur 2 bed flat" (or "Mirpur 2-bed flat" when dash=True)."""
+
+    beds = f"{prop['bedrooms']}-bed" if dash else f"{prop['bedrooms']} bed"
+
+    return f"{property_area(prop)} {beds} {TYPE_WORD.get(prop['property_type'], 'home')}"
+
+
+def risk_level_of(prop):
+    """The risk level the Rentor saw in Step 5 (saved with the report)."""
+
+    saved = prop.get("risk")
+
+    if saved:
+        return saved["level"]
+
+    return assess_risk(prop, prop.get("identity_status", "Needs Review"))["level"]
+
+
+def count_matches(value, wanted):
+    """"Any" matches everything, "4+" means 4 or more, otherwise the number must be equal."""
+
+    if wanted in ("", "Any"):
+        return True
+
+    if wanted.endswith("+"):
+        return value >= int(wanted[:-1])
+
+    return value == int(wanted)
+
+
+def matches_preferences(prop, prefs):
+
+    if prefs["area"] != "Any" and prefs["area"].lower() not in prop["address"].lower():
+        return False
+
+    if not count_matches(prop["bedrooms"], prefs["bedrooms"]):
+        return False
+
+    if not count_matches(prop["washrooms"], prefs["bathrooms"]):
+        return False
+
+    if prefs["property_type"] != "Any" and prop["property_type"] != prefs["property_type"]:
+        return False
+
+    if prefs["min_budget"] is not None and prop["rent"] < prefs["min_budget"]:
+        return False
+
+    if prefs["max_budget"] is not None and prop["rent"] > prefs["max_budget"]:
+        return False
+
+    return True
+
+
+def page_numbers(current, total):
+    """Page buttons such as 1 2 3 ... 10. None means "..."."""
+
+    if total <= 7:
+        return list(range(1, total + 1))
+
+    wanted = sorted(
+        n for n in {1, total, *range(current - 2, current + 3)}
+        if 1 <= n <= total
+    )
+
+    pages = []
+    previous = 0
+
+    for number in wanted:
+
+        if number - previous > 1:
+            pages.append(None)
+
+        pages.append(number)
+        previous = number
+
+    return pages
+
+
+def monthly_total(prop):
+
+    return (
+        prop["rent"]
+        + prop["service_charge"]
+        + prop["utility"]
+        + prop["other_charges"]
+    )
+
+
+def initial_total(prop):
+    """First month's total bill plus the security deposit."""
+
+    return monthly_total(prop) + prop["deposit"]
+
+
+def rentee_ready(need_preferences=False):
+    """Return a redirect if the Rentee skipped a step, otherwise None."""
+
+    if not identity_done():
+
+        flash(
+            "Please complete the identity check first.",
+            "warning"
+        )
+
+        return redirect(url_for("identity"))
+
+    if need_preferences and not session.get("preferences"):
+
+        flash(
+            "Please choose your preferences first.",
+            "warning"
+        )
+
+        return redirect(url_for("rentee_preferences"))
+
+    return None
+
+
+# ============================ RENTEE: STEP 2 PREFERENCES ============================
+
+@app.route("/preferences", methods=["GET", "POST"])
 @role_required("Rentee")
 def rentee_preferences():
 
+    if (redirect_to := rentee_ready()):
+        return redirect_to
+
+    values = session.get("preferences", {})
+
+    if request.method == "POST":
+
+        values = {
+            "area": request.form.get("area", "Any"),
+            "bedrooms": request.form.get("bedrooms", "Any"),
+            "bathrooms": request.form.get("bathrooms", "Any"),
+            "property_type": request.form.get("property_type", "Any"),
+            "min_budget": request.form.get("min_budget", "").strip(),
+            "max_budget": request.form.get("max_budget", "").strip()
+        }
+
+        low = to_number(values["min_budget"]) if values["min_budget"] else None
+        high = to_number(values["max_budget"]) if values["max_budget"] else None
+
+        if values["area"] not in ["Any"] + AREAS:
+
+            flash("Please choose an area from the list.", "danger")
+
+        elif (
+            values["bedrooms"] not in BEDROOM_OPTIONS
+            or values["bathrooms"] not in BATHROOM_OPTIONS
+            or values["property_type"] not in ["Any"] + PROPERTY_TYPES
+        ):
+
+            flash("Please choose from the lists.", "danger")
+
+        elif (values["min_budget"] and low is None) or (values["max_budget"] and high is None):
+
+            flash("Budget must be a number (0 or more).", "danger")
+
+        elif low is not None and high is not None and low > high:
+
+            flash(
+                "Min budget cannot be more than Max budget.",
+                "danger"
+            )
+
+        else:
+
+            session["preferences"] = {
+                **values,
+                "min_budget": low,
+                "max_budget": high
+            }
+
+            return redirect(url_for("rentee_homes"))
+
     return render_template(
-        "coming_soon.html",
-        title="Preferences (Rentee only)",
-        text="This page is built in Part 4. Only Rentees can open it."
+        "preferences.html",
+        steps=RENTEE_STEPS,
+        step=2,
+        v=values,
+        areas=AREAS,
+        bedroom_options=BEDROOM_OPTIONS,
+        bathroom_options=BATHROOM_OPTIONS,
+        types=PROPERTY_TYPES
+    )
+
+
+# ============================ RENTEE: STEP 3 HOMES ============================
+
+@app.route("/homes")
+@role_required("Rentee")
+def rentee_homes():
+
+    if (redirect_to := rentee_ready(need_preferences=True)):
+        return redirect_to
+
+    prefs = session["preferences"]
+
+    matching = [
+        prop
+        for prop in load_json(PROPERTIES_FILE)
+        if prop.get("status") == "published" and matches_preferences(prop, prefs)
+    ]
+
+    matching.sort(key=lambda prop: prop["id"], reverse=True)  # newest first
+
+    requested = {
+        item["property_id"]
+        for item in load_json(APPOINTMENTS_FILE)
+        if item.get("tenant_email") == current_user.id
+    }
+
+    pages = max(1, -(-len(matching) // HOMES_PER_PAGE))
+    page = min(max(request.args.get("page", 1, type=int), 1), pages)
+
+    first = (page - 1) * HOMES_PER_PAGE
+
+    cards = [
+        {
+            "id": prop["id"],
+            "title": short_title(prop),
+            "rent": prop["rent"],
+            "photo": prop["photos"][0] if prop.get("photos") else None,
+            "badge": "Verified" if risk_level_of(prop) == "Low" else "Needs Review",
+            "requested": prop["id"] in requested
+        }
+        for prop in matching[first:first + HOMES_PER_PAGE]
+    ]
+
+    return render_template(
+        "homes.html",
+        steps=RENTEE_STEPS,
+        step=3,
+        cards=cards,
+        total=len(matching),
+        page=page,
+        pages=pages,
+        numbers=page_numbers(page, pages)
+    )
+
+
+@app.route("/request-appointment/<int:property_id>", methods=["POST"])
+@role_required("Rentee")
+def request_appointment(property_id):
+    """Save the Rentee's identity details and the chosen home so the Rentor sees them on Tenant requests."""
+
+    page = request.form.get("page", 1, type=int)
+
+    if (redirect_to := rentee_ready(need_preferences=True)):
+        return redirect_to
+
+    prop = published_property(property_id)
+
+    if not prop:
+
+        flash("That home is not available.", "warning")
+
+        return redirect(url_for("rentee_homes"))
+
+    appointments = load_json(APPOINTMENTS_FILE)
+
+    already = any(
+        item["property_id"] == property_id
+        and item.get("tenant_email") == current_user.id
+        for item in appointments
+    )
+
+    if already:
+
+        flash(
+            "You have already asked for an appointment for this home.",
+            "warning"
+        )
+
+    else:
+
+        person = session["identity"]
+
+        appointments.append({
+            "request_id": max([item["request_id"] for item in appointments] + [0]) + 1,
+            "property_id": property_id,
+            "property_title": short_title(prop),
+            "landlord_email": prop["owner"],
+            "tenant_name": person["full_name"],
+            "tenant_email": current_user.id,
+            "nid_provided": "Yes" if person.get("nid") else "No",
+            "phone_provided": "Yes" if person.get("phone") else "No",
+            "identity_status": person["status"],
+            "created_at": datetime.now().strftime("%Y-%m-%d %H:%M")
+        })
+
+        save_json(APPOINTMENTS_FILE, appointments)
+
+        flash("Appointment request sent to the landlord!", "success")
+
+    return redirect(url_for("rentee_homes", page=page))
+
+
+# ============================ RENTEE: STEP 4 PROPERTY CHECK ============================
+
+@app.route("/property-check/<int:property_id>")
+@role_required("Rentee")
+def rentee_property_check(property_id):
+
+    if (redirect_to := rentee_ready()):
+        return redirect_to
+
+    prop = published_property(property_id)
+
+    if not prop:
+
+        flash("That home is not available.", "warning")
+
+        return redirect(url_for("rentee_homes"))
+
+    rows = []
+
+    for key, label in DOC_ROWS:
+
+        info = prop["documents"].get(key)
+
+        rows.append({
+            "label": label,
+            "have": bool(info),
+            "file": info["file"] if info else None
+        })
+
+    return render_template(
+        "property_check.html",
+        steps=RENTEE_STEPS,
+        step=4,
+        prop=prop,
+        heading=short_title(prop, dash=True),
+        rows=rows,
+        agreement=prop["agreement"],
+        level=risk_level_of(prop)
+    )
+
+
+# ============================ RENTEE: STEP 5 RENT REPORT ============================
+
+@app.route("/rent-report/<int:property_id>")
+@role_required("Rentee")
+def rentee_rent_report(property_id):
+
+    if (redirect_to := rentee_ready()):
+        return redirect_to
+
+    prop = published_property(property_id)
+
+    if not prop:
+
+        flash("That home is not available.", "warning")
+
+        return redirect(url_for("rentee_homes"))
+
+    return render_template(
+        "rent_report.html",
+        steps=RENTEE_STEPS,
+        step=5,
+        prop=prop,
+        monthly=monthly_total(prop),
+        initial=initial_total(prop)
+    )
+
+
+@app.route("/rent-report/<int:property_id>/download-pdf")
+@role_required("Rentee")
+def rentee_rent_report_pdf(property_id):
+
+    if (redirect_to := rentee_ready()):
+        return redirect_to
+
+    prop = published_property(property_id)
+
+    if not prop:
+
+        flash("That home is not available.", "warning")
+
+        return redirect(url_for("rentee_homes"))
+
+    def clean(text):
+        return str(text).encode("latin-1", "replace").decode("latin-1")
+
+    def money_text(value):
+        return "Tk {:,.0f}".format(value)
+
+    pdf = FPDF()
+    pdf.add_page()
+
+    def line(text, size=11, bold=False, gap=7):
+
+        pdf.set_font("Helvetica", "B" if bold else "", size)
+
+        pdf.multi_cell(
+            0, gap, clean(text),
+            new_x="LMARGIN", new_y="NEXT"
+        )
+
+    other_label = "Other charges"
+
+    if prop.get("other_charge_description"):
+        other_label += f" ({prop['other_charge_description']})"
+
+    line("RentCheck", 20, True, 10)
+    line("Rent report", 14, True, 8)
+    line(f"Property address: {prop['address']}")
+    line(f"Landlord: {prop['landlord_name']}")
+    line(f"Tenant: {session['identity']['full_name']}")
+    line(f"Date: {datetime.now().strftime('%Y-%m-%d')}")
+    line("")
+
+    line("Monthly cost", 13, True)
+    line(f"Rent: {money_text(prop['rent'])}")
+    line(f"Service charge: {money_text(prop['service_charge'])}")
+    line(f"Utility: {money_text(prop['utility'])}")
+    line(f"{other_label}: {money_text(prop['other_charges'])}")
+    line(f"Total: {money_text(monthly_total(prop))}", bold=True)
+    line("")
+
+    line("Initial cost", 13, True)
+    line(f"First month: {money_text(monthly_total(prop))}")
+    line(f"Deposit: {money_text(prop['deposit'])}")
+    line(f"Total: {money_text(initial_total(prop))}", bold=True)
+    line("")
+
+    line(
+        "These figures come from the landlord's entries. Please confirm all "
+        "amounts with the landlord before signing an agreement.",
+        9
+    )
+
+    return Response(
+        bytes(pdf.output()),
+        mimetype="application/pdf",
+        headers={
+            "Content-Disposition":
+            "attachment; filename=RentCheck_Cost_Report.pdf"
+        }
     )
 
 

@@ -1,4 +1,4 @@
-# RentCheck (Flask prototype) - Parts 1 to 3
+# RentCheck (Flask prototype) - Parts 1 to 4
 
 ## Run
     python -m venv venv
@@ -45,3 +45,14 @@ The Report page (Step 6) shows the same result and saves the finished property i
 
 To see the Tenant requests page before the Rentee pages exist (Part 4), save one property as rentor@demo.com and run:
     python seed_demo_appointments.py
+
+## Part 4: Rentee pages
+Preferences -> Homes (6 homes per page, filters, Verified / Needs Review badge, Check this, Ask for an appointment)
+-> Property check (click a "Have" row to open the file) -> Rent report (Download PDF).
+Only properties whose Rentor has opened the Report page (status "published") appear in Homes.
+A Rentee's appointment request is saved in data/appointments.json and appears on the Rentor's Tenant requests page.
+Only the name, the identity result and Yes/No for "NID provided" and "Phone provided" are saved, never the NID number or phone.
+
+To test many homes and many pages quickly:
+    python seed_demo_properties.py 70         (adds 70 demo homes)
+    python seed_demo_properties.py --remove   (removes them again)
