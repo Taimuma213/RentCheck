@@ -1,0 +1,37 @@
+{% extends "flow.html" %}
+{% set title = "Preferences" %}
+{% block card %}
+<form method="post">
+  <span class="field-label">Preferred area</span>
+  <select class="field" name="area">
+    <option value="Any" {{ 'selected' if v.get('area', 'Any') == 'Any' }}>Any area</option>
+    {% for a in areas %}<option value="{{ a }}" {{ 'selected' if v.get('area') == a }}>{{ a }}</option>{% endfor %}
+  </select>
+
+  <span class="field-label">Bedrooms</span>
+  <select class="field" name="bedrooms">
+    {% for o in bedroom_options %}<option {{ 'selected' if v.get('bedrooms', 'Any') == o }}>{{ o }}</option>{% endfor %}
+  </select>
+
+  <span class="field-label">Bathrooms</span>
+  <select class="field" name="bathrooms">
+    {% for o in bathroom_options %}<option {{ 'selected' if v.get('bathrooms', 'Any') == o }}>{{ o }}</option>{% endfor %}
+  </select>
+
+  <div class="two">
+    <input class="field" type="number" min="0" step="any" name="min_budget" placeholder="Min budget (Tk)" value="{{ v.get('min_budget', '') | num }}">
+    <input class="field" type="number" min="0" step="any" name="max_budget" placeholder="Max budget (Tk)" value="{{ v.get('max_budget', '') | num }}">
+  </div>
+
+  <span class="field-label">Property type</span>
+  <select class="field" name="property_type">
+    <option value="Any" {{ 'selected' if v.get('property_type', 'Any') == 'Any' }}>Any</option>
+    {% for t in types %}<option value="{{ t }}" {{ 'selected' if v.get('property_type') == t }}>{{ t }}</option>{% endfor %}
+  </select>
+
+  <div class="actions">
+    <a class="btn btn-light" href="{{ url_for('identity') }}">Back</a>
+    <button class="btn">Find homes</button>
+  </div>
+</form>
+{% endblock %}

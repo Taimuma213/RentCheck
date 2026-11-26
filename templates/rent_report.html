@@ -1,0 +1,27 @@
+{% extends "flow.html" %}
+{% set title = "Rent report" %}
+{% block card %}
+<div class="white-card">
+  <div class="card-title">Monthly cost</div>
+  <div class="cost-line"><span>Rent</span><span>{{ prop.rent | tk }}</span></div>
+  <div class="cost-line"><span>Service charge</span><span>{{ prop.service_charge | tk }}</span></div>
+  <div class="cost-line"><span>Utility</span><span>{{ prop.utility | tk }}</span></div>
+  <div class="cost-line">
+    <span>Other charges{% if prop.other_charge_description %} ({{ prop.other_charge_description }}){% endif %}</span>
+    <span>{{ prop.other_charges | tk }}</span>
+  </div>
+  <hr class="divider">
+  <div class="cost-total"><span>Total</span><span>{{ monthly | tk }}</span></div>
+
+  <div class="card-title spaced">Initial cost</div>
+  <div class="cost-line"><span>First month</span><span>{{ monthly | tk }}</span></div>
+  <div class="cost-line"><span>Deposit</span><span>{{ prop.deposit | tk }}</span></div>
+  <hr class="divider">
+  <div class="cost-total"><span>Total</span><span>{{ initial | tk }}</span></div>
+</div>
+
+<div class="actions">
+  <a class="btn btn-light" href="{{ url_for('rentee_property_check', property_id=prop.id) }}">Back</a>
+  <a class="btn" href="{{ url_for('rentee_rent_report_pdf', property_id=prop.id) }}">Download PDF</a>
+</div>
+{% endblock %}

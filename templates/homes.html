@@ -1,0 +1,52 @@
+{% extends "flow.html" %}
+{% set title = "Homes for you" %}
+{% block card %}
+{% if cards %}
+<p class="small">{{ total }} home(s) match your preferences. Page {{ page }} of {{ pages }}.</p>
+<div class="homes-grid">
+  {% for h in cards %}
+  <div class="home-card">
+    {% if h.photo %}
+    <img class="home-photo" src="{{ url_for('static', filename=h.photo) }}" alt="{{ h.title }}">
+    {% else %}
+    <div class="home-photo placeholder">🏠<span>No photo</span></div>
+    {% endif %}
+    <div class="home-title">{{ h.title }}</div>
+    <div class="home-rent">{{ h.rent | tk }}</div>
+    <span class="pill {{ h.badge | pill }}">{{ h.badge }}</span>
+
+    <a class="btn btn-outline btn-wide" href="{{ url_for('rentee_property_check', property_id=h.id) }}">Check this</a>
+
+    {% if h.requested %}
+    <span class="btn btn-requested btn-wide">Requested ✓</span>
+    {% else %}
+    <form method="post" action="{{ url_for('request_appointment', property_id=h.id) }}">
+      <input type="hidden" name="page" value="{{ page }}">
+      <button class="btn btn-wide">Ask for an appointment</button>
+    </form>
+    {% endif %}
+  </div>
+  {% endfor %}
+</div>
+
+{% if pages > 1 %}
+<nav class="pagination" aria-label="Pages">
+  {% if page > 1 %}<a href="{{ url_for('rentee_homes', page=page - 1) }}">Previous</a>{% else %}<span class="disabled">Previous</span>{% endif %}
+  {% for n in numbers %}
+    {% if n is none %}<span class="dots">…</span>
+    {% elif n == page %}<span class="current">{{ n }}</span>
+    {% else %}<a href="{{ url_for('rentee_homes', page=n) }}">{{ n }}</a>{% endif %}
+  {% endfor %}
+  {% if page < pages %}<a href="{{ url_for('rentee_homes', page=page + 1) }}">Next</a>{% else %}<span class="disabled">Next</span>{% endif %}
+</nav>
+{% endif %}
+
+{% else %}
+<div class="empty-box">No homes match your preferences yet. Try a different area or budget.
+  Homes appear here after a Rentor finishes the report for a property.</div>
+{% endif %}
+
+<div class="actions">
+  <a class="btn btn-light" href="{{ url_for('rentee_preferences') }}">Back</a>
+</div>
+{% endblock %}

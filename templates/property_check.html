@@ -1,0 +1,38 @@
+{% extends "flow.html" %}
+{% set title = "Checking " ~ heading ~ " (" ~ prop.landlord_name ~ ")" %}
+{% block card %}
+<div class="section-title">Document checklist</div>
+{% for r in rows %}
+  {% if r.have %}
+  <a class="row row-link" href="{{ url_for('static', filename=r.file) }}" target="_blank" rel="noopener" title="Open the file the landlord uploaded">
+    <span>{{ r.label }}</span>
+    <span class="pill pill-green">Have</span>
+  </a>
+  {% else %}
+  <div class="row row-muted" title="The landlord has not uploaded this document.">
+    <span>{{ r.label }}</span>
+    <span class="pill pill-red">Missing</span>
+  </div>
+  {% endif %}
+{% endfor %}
+<p class="small">Click a “Have” row to open the file the landlord uploaded.</p>
+
+<div class="section-title">Agreement details</div>
+<input class="field" readonly placeholder="Landlord name in agreement" value="{{ agreement.name }}">
+{% for label, value in agreement.conditions.items() %}
+<div class="row">
+  <span>{{ label }}</span>
+  <span class="pill {{ value | pill }}">{{ value }}</span>
+</div>
+{% endfor %}
+
+<div class="risk-line">
+  <b>Rental risk</b>
+  <span class="pill {{ level | pill }}">{{ level }}</span>
+</div>
+
+<div class="actions">
+  <a class="btn btn-light" href="{{ url_for('rentee_homes') }}">Back</a>
+  <a class="btn" href="{{ url_for('rentee_rent_report', property_id=prop.id) }}">Next</a>
+</div>
+{% endblock %}
